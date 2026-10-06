@@ -10,8 +10,8 @@ public class ValidasiInput {
             String raw = scanner.nextLine().trim();
             try {
                 int value = Integer.parseInt(raw);
-                if (value < 0) {
-                    System.out.println("Input salah! Nilai stok tidak boleh negatif.");
+                if (value < 1) {
+                    System.out.println("Input salah! Nilai stok harus diatas 0.");
                     continue;
                 }
                 return value;
@@ -27,8 +27,8 @@ public class ValidasiInput {
             String raw = scanner.nextLine().trim();
             try {
                 double value = Double.parseDouble(raw);
-                if (value < 0) {
-                    System.out.println("Input salah! Harga tidak boleh negatif.");
+                if (value < 2000) {
+                    System.out.println("Input salah! Harga harus diatas Rp2000.");
                     continue;
                 }
                 return value;
