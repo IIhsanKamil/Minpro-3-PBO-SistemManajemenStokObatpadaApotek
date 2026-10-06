@@ -3,9 +3,14 @@ package Model;
 public class ObatBebas extends Obat {
     private String efekSamping;
 
-    public ObatBebas(String idObat, String namaObat, int stok, double harga, KategoriObat kategori, String efekSamping) {
-        super(idObat, namaObat, stok, harga, kategori);
+    public ObatBebas(String idObat, String namaObat, int stok, double harga, String efekSamping) {
+        super(idObat, namaObat, stok, harga);
         this.efekSamping = efekSamping;
+    }
+
+    @Override
+    public String getKategoriString() {
+        return "Obat Bebas";
     }
 
     @Override

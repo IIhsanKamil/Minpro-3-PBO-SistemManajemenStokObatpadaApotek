@@ -1,26 +1,23 @@
 package View;
 
 import Controller.ManajemenStok;
-import java.util.Scanner;
-import Model.KategoriObat;
 import Model.Obat;
 import Model.ObatBebas;
 import Model.ObatResep;
+import Utils.ValidasiInput;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 public class MainView {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        ManajemenStok app = new ManajemenStok();
+    private final ManajemenStok app; // Menggunakan final karena referensi objek tidak akan diubah
+    private final Scanner scanner;
 
-        KategoriObat bebas = new KategoriObat("Obat Bebas", "Dapat dibeli tanpa resep");
-        KategoriObat keras = new KategoriObat("Obat Keras", "Harus dengan resep dokter");
+    public MainView(ManajemenStok app) {
+        this.app = app;
+        this.scanner = new Scanner(System.in);
+    }
 
-        Obat ob1 = new ObatBebas("OBT01", "Paracetamol", 50, 5000, bebas, "Mengantuk");
-        Obat ob2 = new ObatResep("OBT02", "Amoxicillin", 20, 12000, keras, "dr. Rizki");
-
-        app.tambahObatAwal(ob1);
-        app.tambahObatAwal(ob2);
-
+    public void tampilkanMenu() {
         boolean running = true;
 
         while (running) {
@@ -36,53 +33,90 @@ public class MainView {
 
             switch (pilihan) {
                 case "1":
-                    app.tampilkanSemuaObat();
+                    tampilkanTabelObat();
                     break;
 
                 case "2":
                     System.out.println("\n--- TAMBAH OBAT BARU ---");
                     System.out.print("Masukkan ID Obat: ");
                     String id = scanner.nextLine().trim();
+                    
+                    if (app.cariObatById(id) != null) {
+                        System.out.println("ID Obat sudah terdaftar! Gunakan menu update.");
+                        break;
+                    }
 
                     System.out.print("Masukkan Nama Obat: ");
                     String nama = scanner.nextLine().trim();
+                    
+                    // Menggunakan validasi ketat
+                    int stok = ValidasiInput.inputIntPositif(scanner, "Masukkan Jumlah Stok: ");
+                    double harga = ValidasiInput.inputDoublePositif(scanner, "Masukkan Harga Obat: ");
 
-                    int stok = inputInt(scanner, "Masukkan Jumlah Stok: ");
-                    double harga = inputDouble(scanner, "Masukkan Harga Obat: ");
-
-                    System.out.println("\nPilih Kategori Obat:");
-                    System.out.println("1. Obat Bebas (Dapat dibeli tanpa resep)");
-                    System.out.println("2. Obat Keras (Harus dengan resep dokter)");
-                    System.out.print("Pilih Kategori (1/2): ");
+                    System.out.println("\nPilih Kategori Obat:\n1. Bebas\n2. Keras");
+                    System.out.print("Pilih (1/2): ");
                     String katPilih = scanner.nextLine().trim();
 
-                    if (katPilih.equals("1")) {
-                        System.out.print("Masukkan Efek Samping: ");
-                        String efekSamping = scanner.nextLine().trim();
-                        app.tambahObat(new ObatBebas(id, nama, stok, harga, bebas, efekSamping));
-                    } else if (katPilih.equals("2")) {
-                        System.out.print("Masukkan Nama Dokter: ");
-                        String namaDokter = scanner.nextLine().trim();
-                        app.tambahObat(new ObatResep(id, nama, stok, harga, keras, namaDokter));
-                    } else {
-                        System.out.println("Pilihan kategori tidak valid! Batal menambahkan data.");
+                    // Menggunakan switch-case untuk pemilihan kategori
+                    switch (katPilih) {
+                        case "1":
+                            System.out.print("Masukkan Efek Samping: ");
+                            String efekSamping = scanner.nextLine().trim();
+                            app.tambahObat(new ObatBebas(id, nama, stok, harga, efekSamping));
+                            System.out.println("Data obat bebas berhasil ditambahkan!");
+                            break;
+                        case "2":
+                            System.out.print("Masukkan Nama Dokter: ");
+                            String namaDokter = scanner.nextLine().trim();
+                            app.tambahObat(new ObatResep(id, nama, stok, harga, namaDokter));
+                            System.out.println("Data obat resep berhasil ditambahkan!");
+                            break;
+                        default:
+                            System.out.println("Kategori tidak valid! Batal menambahkan data.");
+                            break;
                     }
                     break;
 
-                case "3":
+                    case "3":
+                    System.out.println("\n--- UBAH DATA OBAT ---");
                     System.out.print("Masukkan ID Obat yang ingin diubah: ");
                     String idUpdate = scanner.nextLine().trim();
+                    
                     if (app.cariObatById(idUpdate) != null) {
-                        System.out.print("Masukkan Nama Baru: ");
-                        String namaBaru = scanner.nextLine().trim();
-                        int stokBaru = inputInt(scanner, "Masukkan Stok Baru: ");
-                        double hargaBaru = inputDouble(scanner, "Masukkan Harga Baru: ");
+                        System.out.println("Pilih Jenis Update:");
+                        System.out.println("1. Ubah Seluruh Data (Nama, Stok, Harga)");
+                        System.out.println("2. Tambah Stok Saja (Restock)");
+                        System.out.print("Pilih (1/2): ");
+                        String opsiUpdate = scanner.nextLine().trim();
 
-                        if (app.updateObat(idUpdate, namaBaru, stokBaru, hargaBaru)) {
-                            System.out.println("Data obat berhasil diubah!");
+                        switch (opsiUpdate) {
+                            case "1":
+                                System.out.print("Masukkan Nama Baru: ");
+                                String namaBaru = scanner.nextLine().trim();
+                                int stokBaru = ValidasiInput.inputIntPositif(scanner, "Masukkan Stok Baru: ");
+                                double hargaBaru = ValidasiInput.inputDoublePositif(scanner, "Masukkan Harga Baru: ");
+
+                                // Memanggil Overloading 1 (4 parameter)
+                                if (app.updateObat(idUpdate, namaBaru, stokBaru, hargaBaru)) {
+                                    System.out.println("Seluruh data obat berhasil diubah!");
+                                }
+                                break;
+                            
+                            case "2":
+                                int tambahStok = ValidasiInput.inputIntPositif(scanner, "Masukkan Jumlah Stok yang Ditambahkan: ");
+                                
+                                // Memanggil Overloading 2 (2 parameter)
+                                if (app.updateObat(idUpdate, tambahStok)) {
+                                    System.out.println("Stok obat berhasil ditambahkan!");
+                                }
+                                break;
+                                
+                            default:
+                                System.out.println("Opsi tidak valid! Batal mengubah data.");
+                                break;
                         }
                     } else {
-                        System.out.println("ID Obat tidak ditemukan!");
+                        System.out.println("Gagal Update! ID Obat tidak ditemukan.");
                     }
                     break;
 
@@ -92,43 +126,36 @@ public class MainView {
                     if (app.hapusObat(idHapus)) {
                         System.out.println("Obat berhasil dihapus!");
                     } else {
-                        System.out.println("ID Obat tidak ditemukan!");
+                        System.out.println("Gagal Hapus! ID Obat tidak ditemukan.");
                     }
                     break;
 
                 case "5":
                     running = false;
-                    System.out.println("Terima kasih telah menggunakan sistem ini.");
+                    System.out.println("Terima kasih!");
                     break;
 
                 default:
-                    System.out.println("Input wajib diantara 1-5!");
-            }
-        }
-        scanner.close();
-    }
-
-    private static int inputInt(Scanner scanner, String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String raw = scanner.nextLine().trim();
-            try {
-                return Integer.parseInt(raw);
-            } catch (NumberFormatException e) {
-                System.out.println("Input salah! Masukkan angka bulat.");
+                    System.out.println("Input tidak dikenali! Harap masukkan angka 1-5.");
             }
         }
     }
 
-    private static double inputDouble(Scanner scanner, String prompt) {
-        while (true) {
-            System.out.print(prompt);
-            String raw = scanner.nextLine().trim();
-            try {
-                return Double.parseDouble(raw);
-            } catch (NumberFormatException e) {
-                System.out.println("Input salah! Masukkan angka desimal/bulat.");
-            }
+    private void tampilkanTabelObat() {
+        ArrayList<Obat> daftar = app.getSemuaObat();
+        
+        if (daftar.isEmpty()) {
+            System.out.println("Stok obat masih kosong.");
+            return;
         }
+
+        System.out.println("\n--------------------------------------------------------------------------------------------------");
+        System.out.printf("| %-8s | %-18s | %-15s | %-6s | %-13s | %-22s |\n", "ID", "Nama Obat", "Kategori", "Stok", "Harga", "Keterangan Khusus");
+        System.out.println("--------------------------------------------------------------------------------------------------");
+
+        for (Obat o : daftar) {
+            o.tampilkanInfo();
+        }
+        System.out.println("--------------------------------------------------------------------------------------------------");
     }
 }

@@ -1,6 +1,8 @@
-Controller\ManajemenStok.class
 Model\ObatResep.class
+Model\InfoObat.class
 Model\ObatBebas.class
-Model\Obat.class
 View\MainView.class
-Model\KategoriObat.class
+Controller\ManajemenStok.class
+Main\Main.class
+Model\Obat.class
+Utils\ValidasiInput.class
